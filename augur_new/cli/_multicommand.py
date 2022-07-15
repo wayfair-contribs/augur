@@ -7,6 +7,7 @@ import os
 import sys
 import click
 import importlib
+import traceback
 # import augur.application
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='AUGUR')
@@ -29,6 +30,7 @@ class AugurMultiCommand(click.MultiCommand):
             module = importlib.import_module('.' + name, 'cli')
             return module.cli
         except ModuleNotFoundError as e:
+            print(traceback.format_exc())
             print(f"Error: {e}")
   
 
