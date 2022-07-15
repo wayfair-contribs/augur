@@ -47,22 +47,24 @@ class FacadeSession(GithubTaskSession):
     def __init__(self,logger,config={},platform='GitHub'):
         self.cfg = FacadeConfig(logger)
 
-        super().__init__(logger,config,platform)
+        config = AugurConfig(self)
+
+        super().__init__(logger,platform)
         # Figure out what we need to do
-        self.limited_run = self.augur_config.get_value("Facade", "limited_run")
-        self.delete_marked_repos = self.augur_config.get_value("Facade", "delete_marked_repos")
-        self.pull_repos = self.augur_config.get_value("Facade", "pull_repos")
-        self.clone_repos = self.augur_config.get_value("Facade", "clone_repos")
-        self.check_updates = self.augur_config.get_value("Facade", "check_updates")
-        self.force_updates = self.augur_config.get_value("Facade", "force_updates")
-        self.run_analysis = self.augur_config.get_value("Facade", "run_analysis")
-        self.force_analysis = self.augur_config.get_value("Facade", "force_analysis")
-        self.nuke_stored_affiliations = self.augur_config.get_value("Facade", "nuke_stored_affiliations")
-        self.fix_affiliations = self.augur_config.get_value("Facade", "fix_affiliations")
-        self.force_invalidate_caches = self.augur_config.get_value("Facade", "force_invalidate_caches")
-        self.rebuild_caches = self.augur_config.get_value("Facade", "rebuild_caches")
-        self.multithreaded = self.augur_config.get_value("Facade", "multithreaded")
-        self.create_xlsx_summary_files = self.augur_config.get_value("Facade", "create_xlsx_summary_files")
+        self.limited_run = config.get_value("Facade", "limited_run")
+        self.delete_marked_repos = config.get_value("Facade", "delete_marked_repos")
+        self.pull_repos = config.get_value("Facade", "pull_repos")
+        self.clone_repos = config.get_value("Facade", "clone_repos")
+        self.check_updates = config.get_value("Facade", "check_updates")
+        self.force_updates = config.get_value("Facade", "force_updates")
+        self.run_analysis = config.get_value("Facade", "run_analysis")
+        self.force_analysis = config.get_value("Facade", "force_analysis")
+        self.nuke_stored_affiliations = config.get_value("Facade", "nuke_stored_affiliations")
+        self.fix_affiliations = config.get_value("Facade", "fix_affiliations")
+        self.force_invalidate_caches = config.get_value("Facade", "force_invalidate_caches")
+        self.rebuild_caches = config.get_value("Facade", "rebuild_caches")
+        self.multithreaded = config.get_value("Facade", "multithreaded")
+        self.create_xlsx_summary_files = config.get_value("Facade", "create_xlsx_summary_files")
 
 
 
