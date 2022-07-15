@@ -77,7 +77,7 @@ if logs_directory is None:
 @after_setup_logger.connect
 def setup_loggers(*args,**kwargs):
     #load config
-    loggingConfig = TaskLogConfig(base_log_dir=logs_directory)
+    loggingConfig = TaskLogConfig(base_log_dir=logs_directory,logLevel=logging.INFO)
 
     
     
