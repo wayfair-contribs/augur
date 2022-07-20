@@ -488,9 +488,9 @@ def process_commit_metadata(contributorQueue,repo_id):
 
     for contributor in contributorQueue:
         # Get the email from the commit data
-        email = contributor['email_raw'] if 'email_raw' in contributor else contributor['email']
+        email = contributor.email_raw #if 'email_raw' in contributor else contributor.email
     
-        name = contributor['name']
+        name = contributor.name
 
         # check the email to see if it already exists in contributor_aliases
         try:
@@ -562,14 +562,12 @@ def process_commit_metadata(contributorQueue,repo_id):
                 f"user_data was unable to be reached. Skipping...")
             continue
 
-        # Use the email found in the commit data if api data is NULL
-        emailFromCommitData = contributor['email_raw'] if 'email_raw' in contributor else contributor['email']
-
+        
         session.logger.info(
-            f"Successfully retrieved data from github for email: {emailFromCommitData}")
+            f"Successfully retrieved data from github for email: {email}")
 
         # Get name from commit if not found by GitHub
-        name_field = contributor['commit_name'] if 'commit_name' in contributor else contributor['name']
+        name_field = contributor.name
 
         try:
             
@@ -583,7 +581,7 @@ def process_commit_metadata(contributorQueue,repo_id):
                 "cntrb_company": user_data['company'] if 'company' in user_data else None,
                 "cntrb_location": user_data['location'] if 'location' in user_data else None,
                 # "cntrb_type": , dont have a use for this as of now ... let it default to null
-                "cntrb_canonical": user_data['email'] if 'email' in user_data and user_data['email'] is not None else emailFromCommitData,
+                "cntrb_canonical": user_data['email'] if 'email' in user_data and user_data['email'] is not None else email,
                 "gh_user_id": user_data['id'],
                 "gh_login": user_data['login'],
                 "gh_url": user_data['url'],
@@ -640,7 +638,7 @@ def process_commit_metadata(contributorQueue,repo_id):
 
         try:
             # Update alias after insertion. Insertion needs to happen first so we can get the autoincrementkey
-            insert_alias(session,cntrb, emailFromCommitData)
+            insert_alias(session,cntrb, email)
         except LookupError as e:
             interface.logger.info(
                 ''.join(traceback.format_exception(None, e, e.__traceback__)))
@@ -688,8 +686,8 @@ def link_commits_to_contributor(contributorQueue):
                 #).values({
                 #    'cmt_ght_author_id': cntrb_email['cntrb_id']
                 #}))
-                stmnt = s.update(Commits).where(Commits.cmt_committer_email == cntrb_email['email']).values(
-                    cmt_ght_author_id=cntrb_email['cntrb_id']
+                stmnt = s.update(Commits).where(Commits.cmt_committer_email == cntrb_email.email).values(
+                    cmt_ght_author_id=cntrb_email.cntrb_id
                 ).execution_options(synchronize_session="fetch")
 
                 result = session.execute(stmnt)
@@ -747,7 +745,7 @@ def insert_facade_contributors(session, repo_id,processes=4,multithreaded=True):
     #Execute statement with session.
     new_contribs = session.execute_sql(new_contrib_sql).fetchall()
 
-    print(new_contribs[0].name)
+    #print(new_contribs[0].name)
     
     #json.loads(pd.read_sql(new_contrib_sql, self.db, params={
     #             'repo_id': repo_id}).to_json(orient="records"))

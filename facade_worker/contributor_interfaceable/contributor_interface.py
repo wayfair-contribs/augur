@@ -54,20 +54,16 @@ def create_endpoint_from_commit_sha(session,commit_sha, repo_id):
 
 
 # Try to construct the best url to ping GitHub's API for a username given a full name.
-def create_endpoint_from_name(contributor):
-    #self.logger.info(
-    #    f"Trying to resolve contributor from name: {contributor}")
-
-    # Try to get the 'names' field if 'commit_name' field is not present in contributor data.
-    name_field = 'cmt_author_name' if 'commit_name' in contributor else 'name'
+def create_endpoint_from_name(contributorName):
+    
 
     # Deal with case where name is one word or none.
-    if len(contributor[name_field].split()) < 2:
+    if len(contributorName.split()) < 2:
         raise ValueError
     cmt_cntrb = {
-        'fname': contributor[name_field].split()[0],
+        'fname': contributorName.split()[0],
         # Pythonic way to get the end of a list so that we truely get the last name.
-        'lname': contributor[name_field].split()[-1]
+        'lname': contributorName.split()[-1]
     }
     url = 'https://api.github.com/search/users?q=fullname:{}+{}'.format(
         cmt_cntrb['fname'], cmt_cntrb['lname'])
@@ -199,11 +195,11 @@ def fetch_username_from_email(session, commit):
 
     # email = commit['email_raw'] if 'email_raw' in commit else commit['email_raw']
 
-    if len(commit['email_raw']) <= 2:
+    if len(commit.email_raw) <= 2:
         return login_json  # Don't bother with emails that are blank or less than 2 characters
 
     try:
-        url = create_endpoint_from_email(commit['email_raw'])
+        url = create_endpoint_from_email(commit.email_raw)
     except Exception as e:
         session.logger.info(
             f"Couldn't resolve email url with given data. Reason: {e}")
@@ -216,7 +212,7 @@ def fetch_username_from_email(session, commit):
     # Check if the email result got anything, if it failed try a name search.
     if login_json == None or 'total_count' not in login_json or login_json['total_count'] == 0:
         session.logger.info(
-            f"Could not resolve the username from {commit['email_raw']}")
+            f"Could not resolve the username from {commit.email_raw}")
 
         # Go back to failure condition
         login_json = None
@@ -224,8 +220,8 @@ def fetch_username_from_email(session, commit):
         # Add the email that couldn't be resolved to a garbage table.
 
         unresolved = {
-            "email": commit['email_raw'],
-            "name": commit['name'],
+            "email": commit.email_raw,
+            "name": commit.name,
             #"tool_source": self.tool_source,
             #"tool_version": self.tool_version,
             #"data_source": self.data_source
@@ -262,7 +258,7 @@ def get_login_with_supplemental_data(session, commit_data):
             "Could not resolve the username from the email. Trying a name only search...")
 
         try:
-            url = create_endpoint_from_name(commit_data)
+            url = create_endpoint_from_name(commit_data.name)
         except Exception as e:
             session.logger.info(
                 f"Couldn't resolve name url with given data. Reason: {e}")
@@ -297,7 +293,7 @@ def get_login_with_commit_hash(session, commit_data, repo_id):
 
     # Get endpoint for login from hash
     url = create_endpoint_from_commit_sha(
-        session,commit_data['hash'], repo_id)
+        session,commit_data.hash, repo_id)
 
     #TODO: here.
     # Send api request
