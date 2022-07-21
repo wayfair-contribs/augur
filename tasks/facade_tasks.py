@@ -490,9 +490,9 @@ def process_commit_metadata(contributorQueue,repo_id):
         # Get the email from the commit data
 
         print(contributor)
-        email = contributor.email #if 'email_raw' in contributor else contributor.email
+        email = contributor[2] #if 'email_raw' in contributor else contributor.email
     
-        name = contributor.name
+        name = contributor[0]
 
         # check the email to see if it already exists in contributor_aliases
         try:
@@ -568,8 +568,6 @@ def process_commit_metadata(contributorQueue,repo_id):
         session.logger.info(
             f"Successfully retrieved data from github for email: {email}")
 
-        # Get name from commit if not found by GitHub
-        name_field = contributor.name
 
         try:
             
@@ -604,7 +602,7 @@ def process_commit_metadata(contributorQueue,repo_id):
                 "gh_site_admin": user_data['site_admin'],
                 "cntrb_last_used": None if 'updated_at' not in user_data else user_data['updated_at'],
                 # Get name from commit if api doesn't get it.
-                "cntrb_full_name": name_field if 'name' not in user_data or user_data['name'] is None else user_data['name'],
+                "cntrb_full_name": name if 'name' not in user_data or user_data['name'] is None else user_data['name'],
                 #"tool_source": interface.tool_source,
                 #"tool_version": interface.tool_version,
                 #"data_source": interface.data_source

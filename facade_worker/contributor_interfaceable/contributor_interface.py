@@ -195,11 +195,11 @@ def fetch_username_from_email(session, commit):
 
     # email = commit['email_raw'] if 'email_raw' in commit else commit['email_raw']
 
-    if len(commit.email_raw) <= 2:
+    if len(commit[2]) <= 2:
         return login_json  # Don't bother with emails that are blank or less than 2 characters
 
     try:
-        url = create_endpoint_from_email(commit.email_raw)
+        url = create_endpoint_from_email(commit[2])
     except Exception as e:
         session.logger.info(
             f"Couldn't resolve email url with given data. Reason: {e}")
@@ -212,7 +212,7 @@ def fetch_username_from_email(session, commit):
     # Check if the email result got anything, if it failed try a name search.
     if login_json == None or 'total_count' not in login_json or login_json['total_count'] == 0:
         session.logger.info(
-            f"Could not resolve the username from {commit.email_raw}")
+            f"Could not resolve the username from {commit[2]}")
 
         # Go back to failure condition
         login_json = None
@@ -220,8 +220,8 @@ def fetch_username_from_email(session, commit):
         # Add the email that couldn't be resolved to a garbage table.
 
         unresolved = {
-            "email": commit.email_raw,
-            "name": commit.name,
+            "email": commit[2],
+            "name": commit[0],
             #"tool_source": self.tool_source,
             #"tool_version": self.tool_version,
             #"data_source": self.data_source
@@ -258,7 +258,7 @@ def get_login_with_supplemental_data(session, commit_data):
             "Could not resolve the username from the email. Trying a name only search...")
 
         try:
-            url = create_endpoint_from_name(commit_data.name)
+            url = create_endpoint_from_name(commit_data[0])
         except Exception as e:
             session.logger.info(
                 f"Couldn't resolve name url with given data. Reason: {e}")
@@ -293,7 +293,7 @@ def get_login_with_commit_hash(session, commit_data, repo_id):
 
     # Get endpoint for login from hash
     url = create_endpoint_from_commit_sha(
-        session,commit_data.hash, repo_id)
+        session,commit_data[1], repo_id)
 
     #TODO: here.
     # Send api request
