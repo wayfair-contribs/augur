@@ -488,6 +488,8 @@ def process_commit_metadata(contributorQueue,repo_id):
 
     for contributor in contributorQueue:
         # Get the email from the commit data
+
+        print(contributor)
         email = contributor.email #if 'email_raw' in contributor else contributor.email
     
         name = contributor.name
