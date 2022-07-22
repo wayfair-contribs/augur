@@ -293,7 +293,7 @@ def get_login_with_commit_hash(session, commit_hash, repo_id):
 
     # Get endpoint for login from hash
     url = create_endpoint_from_commit_sha(
-        session,commit_data['hash'], repo_id)
+        session,commit_hash, repo_id)
 
     #TODO: here.
     # Send api request
