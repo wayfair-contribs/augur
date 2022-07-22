@@ -490,9 +490,9 @@ def process_commit_metadata(contributorQueue,repo_id):
         # Get the email from the commit data
 
         print(contributor)
-        email = contributor[2] #if 'email_raw' in contributor else contributor.email
+        email = contributor['email_raw'] if 'email_raw' in contributor else contributor['email']
     
-        name = contributor[0]
+        name = contributor['name']
 
         # check the email to see if it already exists in contributor_aliases
         try:
@@ -546,7 +546,7 @@ def process_commit_metadata(contributorQueue,repo_id):
 
         # Try to get the login from the commit sha
         if login == None or login == "":
-            login = get_login_with_commit_hash(session,contributor, repo_id)
+            login = get_login_with_commit_hash(session,contributor['hash'], repo_id)
     
         if login == None or login == "":
             # Try to get the login from supplemental data if not found with the commit hash
