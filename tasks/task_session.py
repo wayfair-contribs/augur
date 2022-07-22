@@ -14,13 +14,13 @@ sys.path.append("..")
 from sqlalchemy.event import listen
 from sqlalchemy.event import listens_for
 
-from util.random_key_auth import RandomKeyAuth
-from tasks.redis_init import redis_connection as redis
-from augur_config import AugurConfig
+from augur.util.random_key_auth import RandomKeyAuth
+from augur.tasks.redis_init import redis_connection as redis
+from augur.augur_config import AugurConfig
 # import psycopg2 
-from augur_db.engine import engine
+from augur.augur_db.engine import engine
 
-from augur_db.models import Platform
+from augur.augur_db.models import Platform
 sys.path.pop()
 #TODO: setup github headers in a method here.
 #Encapsulate data for celery task worker api
