@@ -536,7 +536,7 @@ def process_commit_metadata(contributorQueue,repo_id):
     
         #Check the contributors table for a login for the given name
         try:
-            contributors_with_matching_name = Contributors.query.filter_by(cntrb_full_name=name).one()
+            contributors_with_matching_name = Contributor.query.filter_by(cntrb_full_name=name).one()
 
             login = contributors_with_matching_name.gh_login
 
@@ -634,7 +634,7 @@ def process_commit_metadata(contributorQueue,repo_id):
         
         #Executes an upsert with sqlalchemy 
         cntrb_natural_keys = ['cntrb_login']
-        session.insert_data(cntrb,Contributors,cntrb_natural_keys)
+        session.insert_data(cntrb,Contributor,cntrb_natural_keys)
 
         try:
             # Update alias after insertion. Insertion needs to happen first so we can get the autoincrementkey

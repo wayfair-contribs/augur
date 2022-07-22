@@ -76,7 +76,7 @@ def insert_alias(session, contributor, email):
     # Same principle as enrich_cntrb_id method.
 
     
-    contributor_table_data = Contributors.query.filter_by(gh_user_id=contributor["gh_user_id"]).all()
+    contributor_table_data = Contributor.query.filter_by(gh_user_id=contributor["gh_user_id"]).all()
     # self.logger.info(f"Contributor query: {contributor_table_data}")
 
     # Handle potential failures
