@@ -13,9 +13,9 @@ from pathlib import Path
 # from augur.cli import initialize_logging
 # from augur.logging import ROOT_AUGUR_DIRECTORY
 
-from augur_db.models import Config
-from tasks.task_session import TaskSession
-from augur_config import AugurConfig
+from augur.augur_db.models import Config
+from augur.tasks.task_session import TaskSession
+from augur.augur_config import AugurConfig
 
 logger = logging.getLogger(__name__)
 ENVVAR_PREFIX = "AUGUR_"
