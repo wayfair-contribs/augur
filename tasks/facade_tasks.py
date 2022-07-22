@@ -744,7 +744,7 @@ def insert_facade_contributors(session, repo_id,processes=4,multithreaded=True):
 
     #Execute statement with session.
     result = session.execute_sql(new_contrib_sql).fetchall()
-    new_contribs = [dict(zip(result.keys(), result)) for row in rows] 
+    new_contribs = [dict(zip(row.keys(), row)) for row in result] 
 
     print(new_contribs)
     
