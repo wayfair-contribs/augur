@@ -37,7 +37,7 @@ def create_endpoint_from_commit_sha(session,commit_sha, repo_id):
 
     #stmnt = s.select(Repo.repo_path, Repo.repo_name).where(Repo.repo_id == repo_id)
 
-    result = session.query(Repo).query.filter_by(repo_id=repo_id).one()
+    result = session.query(Repo).filter_by(repo_id=repo_id).one()
 
     if result.repo_path is None or result.repo_name is None:
         raise KeyError
