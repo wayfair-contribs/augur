@@ -506,7 +506,7 @@ def process_commit_metadata(contributorQueue,repo_id):
             """
 
 
-            alias_table_data = session.query(ContributorsAliases).filter_by(alias_email=email).all()
+            alias_table_data = session.query(ContributorsAlias).filter_by(alias_email=email).all()
             if len(alias_table_data) >= 1:
                 # Move on if email resolved
 
