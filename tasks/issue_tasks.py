@@ -752,7 +752,7 @@ def pull_request_review_comments(self, owner: str, repo: str) -> None:
         pr_review_id = comment["pull_request_review_id"]
 
         try:
-            related_pr_review = PullRequestReviews.query.filter_by(pr_review_src_id=pr_review_id).one()
+            related_pr_review = session.query(PullRequestReviews).filter_by(pr_review_src_id=pr_review_id).one()
 
         # if we cannot find a pr review to relate the message to, then we skip the message and it is not inserted
         except s.orm.exc.NoResultFound:

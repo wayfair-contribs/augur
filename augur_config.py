@@ -169,7 +169,7 @@ class AugurConfig():
 
     def remove_section(self, section_name):
 
-        Config.query.filter_by(section_name=section_name).delete()
+        self.session.query(Config).filter_by(section_name=section_name).delete()
 
         # db.session.commit()
 
@@ -182,7 +182,7 @@ class AugurConfig():
 
     def is_section_in_config(self, section_name):
 
-        return Config.query.filter_by(section_name=section_name).first() is not None
+        return self.session.query(Repo).filter_by(section_name=section_name).first() is not None
 
     def empty(self):
 

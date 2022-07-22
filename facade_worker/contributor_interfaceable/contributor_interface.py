@@ -76,7 +76,7 @@ def insert_alias(session, contributor, email):
     # Same principle as enrich_cntrb_id method.
 
     
-    contributor_table_data = Contributor.query.filter_by(gh_user_id=contributor["gh_user_id"]).all()
+    contributor_table_data = session.query(Contributor).filter_by(gh_user_id=contributor["gh_user_id"]).all()
     # self.logger.info(f"Contributor query: {contributor_table_data}")
 
     # Handle potential failures
@@ -319,7 +319,7 @@ def create_endpoint_from_repo_id(session, repo_id):
         WHERE repo_id = :repo_id_bind
     """
     #ORM syntax of above statement
-    result = Repo.query.filter_by(repo_id=repo_id).one()
+    result = session.query(Repo).filter_by(repo_id=repo_id).one()
 
     url = result.repo_git
     session.logger.info(f"Url: {url}")
