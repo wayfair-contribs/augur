@@ -288,14 +288,14 @@ def fill_empty_affiliations(cfg):
             "WHERE cmt_author_raw_email = %s")
 
         cfg.cursor.execute(reset_author, (discover_alias(changed_alias[0]),changed_alias[0]))
-        cfg.db.commit
+        cfg.db.commit()
 
         reset_committer = ("UPDATE commits "
             "SET cmt_committer_email = %s "
             "WHERE cmt_committer_raw_email = %s")
 
         cfg.cursor.execute(reset_committer, (discover_alias(changed_alias[0]),changed_alias[0]))
-        cfg.db.commit
+        cfg.db.commit()
 
     # Update the last fetched date, so we know where to start next time.
 
