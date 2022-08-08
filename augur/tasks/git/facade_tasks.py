@@ -21,6 +21,7 @@ from celery.result import allow_join_result
 from celery.signals import after_setup_logger
 from datetime import timedelta
 import sqlalchemy as s
+from sqlalchemy.dialects import postgresql as pg_dialect
 
 from augur.tasks.git.util.facade_worker.facade_worker.facade02utilitymethods import update_repo_log, trim_commit, store_working_author, trim_author
 from augur.tasks.git.util.facade_worker.facade_worker.facade03analyzecommit import analyze_commit
@@ -698,16 +699,13 @@ def link_commits_to_contributor(contributorQueue):
                 #    'cmt_ght_author_id': cntrb_email['cntrb_id']
                 #}))
                 #stmnt = s.update(Commit).where(Commit.cmt_committer_email == cntrb_email['email']).values(
-                #    cmt_ght_author_id=cntrb_email['cntrb_id']
+                #    Commit.cmt_committer_email == cntrb_email['email']
                 #).execution_options(synchronize_session="fetch")
 
                 #result = session.execute(stmnt)
-                commits = session.query(Commit).filter_by(cmt_committer_email=cntrb_email['email']).all()
-
-                for record in commits:
-                    record.cmt_ght_author_id = cntrb_email['cntrb_id']
-                
-                session.insert_data(commits, Commit, ['cmt_commit_hash'])
+                result = pg_dialect.update(Commit).where(Commit.cmt_committer_email == cntrb_email['email']).values(
+                    cmt_ght_author_id= cntrb_email['cntrb_id']
+                )
 
             except Exception as e:
                 logger.info(
