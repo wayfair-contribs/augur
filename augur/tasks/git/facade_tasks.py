@@ -368,7 +368,7 @@ def facade_init(session):
 
 
 @celery.task
-def facade_commits_model():
+def facade_commits_model(github_contributor_resolution=True):
 
     logger = logging.getLogger(facade_commits_model.__name__)
     session = FacadeSession(logger)
@@ -420,7 +420,24 @@ def facade_commits_model():
     #Give analysis the github interface so that it can make API calls
     #if not limited_run or (limited_run and run_analysis):
     analysis(session.cfg, multithreaded, session=session)
-    
+
+    if github_contributor_resolution:
+        ### moved up by spg on 12/1/2021
+        #Interface with the contributor worker and inserts relevant data by repo
+        session.cfg.update_status('Updating Contributors')
+        session.cfg.log_activity('Info', 'Updating Contributors with commits')
+        query = ("SELECT repo_id FROM repo");
+
+        session.cfg.cursor.execute(query)
+
+        all_repos = list(session.cfg.cursor)
+
+        #pdb.set_trace()
+        #breakpoint()
+        for repo in all_repos:
+            session.logger.info(f"Processing repo {repo}")
+            insert_facade_contributors(session,repo[0],multithreaded=multithreaded)
+
     ### end moved up
 
     if nuke_stored_affiliations:
@@ -447,7 +464,7 @@ def facade_commits_model():
 
     # All done
     session.cfg.update_status('Idle')
-    session.cfg.log_activity('Quiet','facade-worker.py completed')
+    session.cfg.log_activity('Quiet','facade completed')
     
     elapsed_time = time.time() - start_time
 
@@ -680,11 +697,18 @@ def link_commits_to_contributor(contributorQueue):
                 #).values({
                 #    'cmt_ght_author_id': cntrb_email['cntrb_id']
                 #}))
-                stmnt = s.update(Commit).where(Commit.cmt_committer_email == cntrb_email['email']).values(
-                    cmt_ght_author_id=cntrb_email['cntrb_id']
-                ).execution_options(synchronize_session="fetch")
+                #stmnt = s.update(Commit).where(Commit.cmt_committer_email == cntrb_email['email']).values(
+                #    cmt_ght_author_id=cntrb_email['cntrb_id']
+                #).execution_options(synchronize_session="fetch")
 
-                result = session.execute(stmnt)
+                #result = session.execute(stmnt)
+                commits = session.query(Commit).filter_by(cmt_committer_email=cntrb_email['email']).all()
+
+                for record in commits:
+                    record.cmt_ght_author_id = cntrb_email['cntrb_id']
+                
+                session.insert_data(commits, Commit, ['cmt_commit_hash'])
+
             except Exception as e:
                 logger.info(
                     f"Ran into problem when enriching commit data. Error: {e}")
@@ -822,32 +846,3 @@ def insert_facade_contributors(session, repo_id,processes=4,multithreaded=True):
 
     session.logger.info("Done with inserting and updating facade contributors")
     return
-
-@celery.task
-def facade_resolve_contribs():
-    logger = logging.getLogger(facade_resolve_contribs.__name__)
-    session = FacadeSession(logger)
-
-    facade_init(session)
-
-    multithreaded = session.multithreaded
-    start_time = time.time()
-    ### moved up by spg on 12/1/2021
-    #Interface with the contributor worker and inserts relevant data by repo
-    session.cfg.update_status('Updating Contributors')
-    session.cfg.log_activity('Info', 'Updating Contributors with commits')
-    query = ("SELECT repo_id FROM repo");
-
-    session.cfg.cursor.execute(query)
-
-    all_repos = list(session.cfg.cursor)
-
-    #pdb.set_trace()
-    #breakpoint()
-    for repo in all_repos:
-        session.logger.info(f"Processing repo {repo}")
-        insert_facade_contributors(session,repo[0],multithreaded=multithreaded)
-    
-    elapsed_time = time.time() - start_time
-
-    print('\nCompleted in %s\n' % timedelta(seconds=int(elapsed_time)))
