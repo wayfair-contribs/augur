@@ -691,7 +691,7 @@ def link_commits_to_contributor(contributorQueue):
         for cntrb_email in contributorQueue:
             logger.debug(
                 f"These are the emails and cntrb_id's  returned: {cntrb_email}")
-                
+
             try:
                 #database.execute(commits_table.update().where(
                 #    commits_table.c.cmt_committer_email == cntrb_email['email']
@@ -828,7 +828,7 @@ def insert_facade_contributors(session, repo_id,processes=4,multithreaded=True):
     result = session.execute_sql(resolve_email_to_cntrb_id_sql).fetchall()
     existing_cntrb_emails = [dict(zip(row.keys(), row)) for row in result]
     
-    if len(existing_cntrb_emails) > 0 and multithreaded:
+    if False:#len(existing_cntrb_emails) > 0 and multithreaded:
         
         #Split commits into mostly equal queues so each process starts with a workload and there is no
         #    overhead to pass into queue from the parent.
