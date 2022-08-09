@@ -406,7 +406,7 @@ def facade_commits_model(github_contributor_resolution=True):
         git_repo_initialize(session.cfg)
 
     if not limited_run or (limited_run and check_updates):
-        check_for_repo_updates(session.cfg)
+        check_for_repo_updates(session)
 
     if force_updates:
         force_repo_updates(session.cfg)
@@ -446,7 +446,7 @@ def facade_commits_model(github_contributor_resolution=True):
 
     session.logger.info(session.cfg)
     if not limited_run or (limited_run and fix_affiliations):
-        fill_empty_affiliations(session.cfg)
+        fill_empty_affiliations(session)
 
     if force_invalidate_caches:
         invalidate_caches(session.cfg)
@@ -691,7 +691,7 @@ def link_commits_to_contributor(contributorQueue):
         for cntrb_email in contributorQueue:
             logger.debug(
                 f"These are the emails and cntrb_id's  returned: {cntrb_email}")
-
+                
             try:
                 #database.execute(commits_table.update().where(
                 #    commits_table.c.cmt_committer_email == cntrb_email['email']
@@ -711,6 +711,7 @@ def link_commits_to_contributor(contributorQueue):
                 logger.info(
                     f"Ran into problem when enriching commit data. Error: {e}")
                 continue
+
         
         return
 

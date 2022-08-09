@@ -4,6 +4,7 @@ import httpx
 import time
 import json
 import asyncio
+import datetime
 from augur.tasks.util.random_key_auth import RandomKeyAuth
 
 # from oauth_key_manager import OauthKeyManager
@@ -261,6 +262,8 @@ class GithubPaginator(collections.abc.Sequence):
                 page_data = response.json()
             except:
                 page_data = json.loads(json.dumps(response.text))
+
+            # print(page_data)
 
             # if the data is a list, then return it and the response
             if type(page_data) == list:
