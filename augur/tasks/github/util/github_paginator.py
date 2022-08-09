@@ -33,7 +33,7 @@ def hit_api(session,url: str, method='GET') -> httpx.Response:
 
 def process_dict_response(logger, response: httpx.Response, page_data: dict):
         
-        #logger.info("Request returned a dict: {}\n".format(page_data))
+        logger.info("Request returned a dict: {}\n".format(page_data))
 
         if 'message' not in page_data.keys():
             return None
@@ -214,13 +214,18 @@ class GithubPaginator(collections.abc.Sequence):
 
     def hit_api(self, url: str, timeout, method='GET') -> httpx.Response:
 
-        # self.logger.info(f"Hitting endpoint with {method} request: {url}...\n")
+        #self.logger.info(f"Hitting endpoint with {method} request: {url}...\n")
+        #self.logger.info(f"Keys {self.key_manager.list_of_keys}\n")
 
         with httpx.Client() as client:
 
             try:
                 response = client.request(
                     method=method, url=url, auth=self.key_manager, timeout=timeout)
+                
+                #self.logger.info(f"{response.request.headers['Authorization']}")
+
+                #response.request(self, value)
 
             except TimeoutError:
                 self.logger.info(f"Request timed out. Sleeping {round(timeout)} seconds and trying again...\n")
