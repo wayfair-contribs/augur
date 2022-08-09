@@ -706,7 +706,7 @@ def link_commits_to_contributor(contributorQueue):
                 result = Commit.__table__.update().where(Commit.cmt_committer_email == cntrb_email['email']).values(
                     cmt_ght_author_id= cntrb_email['cntrb_id']
                 )
-                session.execute(result)
+                #session.execute(result)
             except Exception as e:
                 logger.info(
                     f"Ran into problem when enriching commit data. Error: {e}")

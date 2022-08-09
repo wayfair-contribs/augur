@@ -32,7 +32,7 @@ def upgrade():
 
     op.add_column('commits', sa.Column('cmt_ght_author_id', postgresql.UUID(as_uuid=True), nullable=True), schema='augur_data')
     op.create_index('author_cntrb_id', 'commits', ['cmt_ght_author_id'], unique=False, schema='augur_data')
-    op.create_foreign_key(None, 'commits', 'contributors', ['cmt_ght_author_id'], ['cntrb_id'], source_schema='augur_data', referent_schema='augur_data')
+    #op.create_foreign_key(None, 'commits', 'contributors', ['cmt_ght_author_id'], ['cntrb_id'], source_schema='augur_data', referent_schema='augur_data')
     
 
     
