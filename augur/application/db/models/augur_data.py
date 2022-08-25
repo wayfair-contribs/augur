@@ -129,38 +129,29 @@ class ContributorAffiliation(Base):
     )
 
 
+class ContributorInGroup(Base):
+    cntrb_id = ForeignKey("Contributor")
+    cntrb_group_id = ForeignKey("ContributorGroup")
+
+
+class PlatformUserIsContributor(Base):
+    cntrb_id = ForeignKey("Contributor")
+    platform_user_id = ForeignKey("PlatformUser")
+
+
+class ContributorEmail(Base):
+    email = Column(CHAR(320), index=True)
+    cntrb_id = ForeignKey("Contributor")
+    contributor = relationship("Contributor", back_populates="emails")
+
+
+class ContributorGroup(Base):
+    display_name = Column(String, comment="Name of the group of contributors")
+    contributors = relationship("Contributor", back_populates="groups", secondary=ContributorInGroup)
+
+
 class Contributor(Base):
     __tablename__ = "contributors"
-    __table_args__ = (
-        # add uniques explitcitly, they were inline before
-        UniqueConstraint('gh_login', name='GH-UNIQUE-C', initially="DEFERRED", deferrable=True),
-        UniqueConstraint('gl_id', name='GL-UNIQUE-B', initially="DEFERRED", deferrable=True),
-
-        # unique key for gitlab users on insertion
-        UniqueConstraint('gl_username', name='GL-UNIQUE-C', initially="DEFERRED", deferrable=True),
-        UniqueConstraint('cntrb_login', name='GL-cntrb-LOGIN-UNIQUE'),
-
-
-        # changed from inline to not inline
-        Index("cnt-fullname", "cntrb_full_name", postgresql_using='hash'),
-        Index("cntrb-theemail", "cntrb_email", postgresql_using='hash'),
-        Index("contributors_idx_cntrb_email3", "cntrb_email"),
-        Index("cntrb_canonica-idx11", "cntrb_canonical"),
-        Index("cntrb_login_platform_index", "cntrb_login"),
-
-
-        # added
-        Index("contributor_worker_email_finder", "cntrb_email", postgresql_using='brin'),
-        Index("contributor_worker_fullname_finder", "cntrb_full_name", postgresql_using='brin'),
-
-        Index("login", "cntrb_login"),
-        Index("login-contributor-idx", "cntrb_login"),
-
-        {
-            "schema": "augur_data",
-            "comment": "For GitHub, this should be repeated from gh_login. for other systems, it should be that systems login. \nGithub now allows a user to change their login name, but their user id remains the same in this case. So, the natural key is the combination of id and login, but there should never be repeated logins. ",
-        },
-    )
 
     cntrb_id = Column(
         UUID(as_uuid=True),
@@ -169,16 +160,13 @@ class Contributor(Base):
             "nextval('augur_data.contributors_cntrb_id_seq'::regclass)"
         ),
     )
-    cntrb_login = Column(
+    name = Column(
         String,
-        comment="Will be a double population with the same value as gh_login for github, but the local value for other systems. ",
+        comment="Name of the contributor",
     )
-    cntrb_email = Column(
-        String,
-        comment="This needs to be here for matching contributor ids, which are augur, to the commit information. ",
-    )
-    cntrb_full_name = Column(String)
-    cntrb_company = Column(String)
+    emails = relationship(ContributorEmail, back_populates="contributor")
+    platform_users = relationship("PlatformUser", back_populates="contributors", secondary=PlatformUserIsContributor)
+    groups = relationship("ContributorGroup", back_populates="contributors", secondary=ContributorInGroup)
     cntrb_created_at = Column(TIMESTAMP(precision=0))
     cntrb_type = Column(
         String, comment="Present in another models. It is not currently used in Augur. "
@@ -195,57 +183,28 @@ class Contributor(Base):
     cntrb_last_used = Column(
         TIMESTAMP(True, 0), server_default=text("NULL::timestamp with time zone")
     )
-    gh_user_id = Column(BigInteger)
-    gh_login = Column(
-        String,
-        comment="populated with the github user name for github originated data. ",
-    )
-    gh_url = Column(String)
-    gh_html_url = Column(String)
-    gh_node_id = Column(String)
-    gh_avatar_url = Column(String)
-    gh_gravatar_id = Column(String)
-    gh_followers_url = Column(String)
-    gh_following_url = Column(String)
-    gh_gists_url = Column(String)
-    gh_starred_url = Column(String)
-    gh_subscriptions_url = Column(String)
-    gh_organizations_url = Column(String)
-    gh_repos_url = Column(String)
-    gh_events_url = Column(String)
-    gh_received_events_url = Column(String)
-    gh_type = Column(String)
-    gh_site_admin = Column(String)
-    gl_web_url = Column(
-        String,
-        comment='“web_url” value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
-    gl_avatar_url = Column(
-        String,
-        comment='“avatar_url” value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
-    gl_state = Column(
-        String,
-        comment='“state” value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
-    gl_username = Column(
-        String,
-        comment='“username” value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
-    gl_full_name = Column(
-        String,
-        comment='“name” value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
-    gl_id = Column(
-        BigInteger,
-        comment='"id" value from these API calls to GitLab, all for the same user\n\nhttps://gitlab.com/api/v4/users?username=computationalmystic\nhttps://gitlab.com/api/v4/users?search=s@goggins.com\nhttps://gitlab.com/api/v4/users?search=outdoors@acm.org\n\n[\n  {\n    "id": 5481034,\n    "name": "sean goggins",\n    "username": "computationalmystic",\n    "state": "active",\n    "avatar_url": "https://secure.gravatar.com/avatar/fb1fb43953a6059df2fe8d94b21d575c?s=80&d=identicon",\n    "web_url": "https://gitlab.com/computationalmystic"\n  }\n]',
-    )
     tool_source = Column(String)
     tool_version = Column(String)
     data_source = Column(String)
     data_collection_date = Column(
-        TIMESTAMP(precision=0), server_default=text("CURRENT_TIMESTAMP")
+        TIMESTAMP(precision=0), server_defavult=text("CURRENT_TIMESTAMP")
     )
+
+
+class PlatformUser(Base):
+    identity = Column(CHAR(64))
+    display_name = Column(String)
+    url = Column(String)
+    platform = ForeignKey("Platform")
+    cntrb_id = ForeignKey("Contributor")
+    contributors = relationship("Contributor", back_populates="platform_users", secondary=PlatformUserIsContributor)
+    tool_source = Column(String)
+    tool_version = Column(String)
+    data_source = Column(String)
+    data_collection_date = Column(
+        TIMESTAMP(precision=0), server_defavult=text("CURRENT_TIMESTAMP")
+    )
+
 
 
 t_dm_repo_annual = Table(
