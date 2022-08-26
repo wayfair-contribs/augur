@@ -31,7 +31,7 @@ class GithubApiKeyHandler():
 
         self.keys = self.get_api_keys()
 
-        # self.logger.debug(f"Retrieved {len(self.keys)} github api keys for use")
+        self.logger.debug(f"Retrieved {len(self.keys)} github api keys for use")
 
     def get_config_key(self) -> str:
         """Retrieves the users github api key from their config table
@@ -68,12 +68,16 @@ class GithubApiKeyHandler():
         Returns:
             Valid Github api keys
         """
-
+        
+        
         if len(self.redis_key_list) > 0:
+            #self.logger.info(f"not getting keys from database! {self.redis_key_list}")
             return list(self.redis_key_list)
-
+            
+        #self.logger.info("getting keys from database!")
         keys = self.get_api_keys_from_database()
-    
+
+        #self.logger.info(f"Oauth keys {keys}. Config key {self.config_key}")
         if self.config_key is not None:
             keys += [self.config_key]
 
@@ -88,6 +92,8 @@ class GithubApiKeyHandler():
                 # removes key if it returns "Bad Credentials"
                 if self.is_bad_api_key(client, key) is False:
                     valid_keys.append(key)
+                else:
+                    self.logger.error(f"KEY {key} IS INVALID AND WON'T BE USED!")
 
         # just in case the mulitprocessing adds extra values to the list.
         # we are clearing it before we push the values we got
@@ -95,6 +101,8 @@ class GithubApiKeyHandler():
 
         # add all the keys to redis
         self.redis_key_list.extend(valid_keys)
+
+        self.logger.info(f"Valid keys: {valid_keys}")
 
         return valid_keys
 
