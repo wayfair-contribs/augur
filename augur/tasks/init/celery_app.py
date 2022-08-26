@@ -30,11 +30,13 @@ git_tasks = ['augur.tasks.git.facade_tasks']
 
 tasks = start_tasks + github_tasks + git_tasks
 
+task_annotations = {'*': {'rate_limit': '7/s'}}
+
 # initialize the celery app
 BROKER_URL = f'{redis_conn_string}{redis_db_number}'
 BACKEND_URL = f'{redis_conn_string}{redis_db_number+1}'
 celery_app = Celery('tasks', broker=BROKER_URL,
-                    backend=BACKEND_URL, include=tasks, worker_pool_restarts=True)
+                    backend=BACKEND_URL, include=tasks, worker_pool_restarts=True, task_annotations=task_annotations)
 
 #Setting to be able to see more detailed states of running tasks
 celery_app.conf.task_track_started = True
