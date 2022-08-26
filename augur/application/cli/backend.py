@@ -57,7 +57,7 @@ def start(disable_collection):
                 logger.info("Deleting old task schedule")
                 os.remove("celerybeat-schedule.db")
 
-            celery_command = f"celery -A augur.tasks.init.celery_app.celery_app worker -l info --concurrency=20 -n {instance_id}@%h"
+            celery_command = f"celery -A augur.tasks.init.celery_app.celery_app worker -l info --concurrency=12 -n {instance_id}@%h"
             celery_worker_process = subprocess.Popen(celery_command.split(" "))
             time.sleep(5)
 
