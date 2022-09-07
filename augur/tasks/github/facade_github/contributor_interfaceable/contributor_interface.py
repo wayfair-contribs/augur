@@ -16,7 +16,7 @@ from augur.tasks.util.AugurUUID import AugurUUID, GithubUUID, UnresolvableUUID
 from augur.tasks.github.util.github_paginator import GithubPaginator, hit_api, process_dict_response
 # Debugger
 import traceback
-
+from augur.tasks.github.util.github_paginator import GithubApiResult
 ##TODO: maybe have a TaskSession class that holds information about the database, logger, config, etc.
 
 # postgresql
@@ -60,7 +60,7 @@ def request_dict_from_endpoint(session, url, timeout_wait=10):
             err = process_dict_response(session.logger,response,response_data)
 
             #If we get an error message that's not None
-            if err:
+            if err and err != GithubApiResult.NEW_RESULT:
                 attempts += 1
                 continue
 
@@ -383,6 +383,7 @@ def get_login_with_commit_hash(session, commit_data, repo_id):
 
     #TODO: here.
     # Send api request
+    session.logger.info(f"Getting data through commit endpoint: {url}")
     login_json = request_dict_from_endpoint(session,url)
 
     if login_json is None or 'sha' not in login_json:
