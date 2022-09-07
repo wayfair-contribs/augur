@@ -17,6 +17,7 @@ from augur.tasks.github.repo_info.tasks import collect_repo_info
 from augur.tasks.git.facade_tasks import *
 # from augur.tasks.data_analysis import *
 from augur.tasks.init.celery_app import celery_app as celery
+from celery.result import allow_join_result
 from augur.application.logs import AugurLogger
 from augur.application.db.session import DatabaseSession
 from augur.tasks.init.celery_app import engine
@@ -124,7 +125,8 @@ class AugurTaskRoutine:
             self.logger.info(f"Starting phase {phaseName}")
             #Call the function stored in the dict to return the object to call apply_async on
             phaseResult = job().apply_async()
-            phaseResult.wait()
+            with allow_join_result():
+                phaseResult.wait()
             self.logger.info(f"Result of {phaseName} phase: {phaseResult.status}")
 
 
