@@ -34,6 +34,32 @@ class AugurTaskPhase(Enum):
     MACHINE_LEARNING = "Machine_learning"
     POST_PHASE = "Post_phase"
 
+def initialize_prelim_phase():
+    preliminary_task_list = [detect_github_repo_move.si()]
+    preliminary_tasks = group(preliminary_task_list)
+    return preliminary_tasks
+
+def initialize_repo_collect_phase():
+    #store all tasks that taks a repo as an argument 
+    tasks_with_repo_domain = []
+    #A chain is needed for each repo.
+    with DatabaseSession(self.logger) as session:
+        repos = session.query(Repo).all()
+
+        for repo in repos:
+            first_tasks_repo = group(collect_issues.si(repo.repo_git),collect_pull_requests.si(repo.repo_git))
+            second_tasks_repo = group(collect_events.si(repo.repo_git),collect_github_messages.si(repo.repo_git))
+
+            repo_chain = chain(first_tasks_repo,second_tasks_repo)
+            tasks_with_repo_domain.append(repo_chain)
+    
+    return group(
+            chain(group(*tasks_with_repo_domain),process_contributors.si()),
+            facade_commits_model.si(),
+            collect_releases.si(),
+            collect_repo_info.si()
+        )
+
 
 class AugurTaskRoutine:
     """class to keep track of various groups of collection tasks as well as how they relate to one another.
@@ -53,30 +79,11 @@ class AugurTaskRoutine:
 
         #Assemble default phases
         #These will then be able to be overridden through the config.
-        preliminary_task_list = [detect_github_repo_move.si()]
-
-        preliminary_tasks = group(preliminary_task_list)
-        self.jobs_dict[AugurTaskPhase.PRELIMINARY] = preliminary_tasks
+        self.jobs_dict[AugurTaskPhase.PRELIMINARY] = initialize_prelim_phase
         
-        #store all tasks that taks a repo as an argument 
-        tasks_with_repo_domain = []
-        #A chain is needed for each repo.
-        with DatabaseSession(self.logger) as session:
-            repos = session.query(Repo).all()
-
-            for repo in repos:
-                first_tasks_repo = group(collect_issues.si(repo.repo_id),collect_pull_requests.si(repo.repo_id))
-                second_tasks_repo = group(collect_events.si(repo.repo_id),collect_github_messages.si(repo.repo_id))
-
-                repo_chain = chain(first_tasks_repo,second_tasks_repo)
-                tasks_with_repo_domain.append(repo_chain)
         
-        self.jobs_dict[AugurTaskPhase.REPO_COLLECT] = group(
-            chain(group(*tasks_with_repo_domain),process_contributors.si()),
-            facade_commits_model.si(),
-            collect_releases.si(),
-            collect_repo_info.si()
-        )
+        
+        self.jobs_dict[AugurTaskPhase.REPO_COLLECT] = initialize_repo_collect_phase
 
                 
 
@@ -114,10 +121,11 @@ class AugurTaskRoutine:
         self.logger.info(f"Enabled phases: {self.jobs_dict.keys()}")
         augur_collection_list = []
         for phaseName, job in self.jobs_dict.items():
-            augur_collection_list.append(job)
-        
-        augur_collection = chain(*augur_collection_list)
-        augur_collection.apply_async()
+            self.logger.info(f"Starting phase {phaseName}")
+            #Call the function stored in the dict to return the object to call apply_async on
+            phaseResult = job().apply_async()
+            phaseResult.wait()
+            self.logger.info(f"Result of {phaseName} phase: {phaseResult.status}")
 
 
 @celery.task
