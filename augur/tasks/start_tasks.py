@@ -20,7 +20,7 @@ from augur.tasks.init.celery_app import celery_app as celery
 from celery.result import allow_join_result
 from augur.application.logs import AugurLogger
 from augur.application.db.session import DatabaseSession
-from augur.tasks.init.celery_app import engine
+#from augur.tasks.init.celery_app import engine
 from logging import Logger
 
 pr_numbers = [70, 106, 170, 190, 192, 208, 213, 215, 216, 218, 223, 224, 226, 230, 237, 238, 240, 241, 248, 249, 250, 252, 253, 254, 255, 256, 257, 261, 268, 270, 273, 277, 281, 283, 288, 291, 303, 306, 309, 310, 311, 323, 324, 325, 334, 335, 338, 343, 346, 348, 350, 353, 355, 356, 357, 359, 360, 365, 369, 375, 381, 382, 388, 405, 408, 409, 410, 414, 418, 419, 420, 421, 422, 424, 425, 431, 433, 438, 445, 450, 454, 455, 456, 457, 460, 463, 468, 469, 470, 474, 475, 476, 477, 478, 479, 480, 481, 482, 484, 485, 486, 487, 488, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 504, 506, 507, 508, 509, 510, 512, 514]
@@ -35,21 +35,21 @@ class AugurTaskPhase(Enum):
     MACHINE_LEARNING = "Machine_learning"
     POST_PHASE = "Post_phase"
 
-def initialize_prelim_phase():
+def initialize_prelim_phase(logger):
     preliminary_task_list = [detect_github_repo_move.si()]
     preliminary_tasks = group(preliminary_task_list)
     return preliminary_tasks
 
-def initialize_repo_collect_phase():
+def initialize_repo_collect_phase(logger):
     #store all tasks that taks a repo as an argument 
     tasks_with_repo_domain = []
     #A chain is needed for each repo.
-    with DatabaseSession(self.logger) as session:
+    with DatabaseSession(logger) as session:
         repos = session.query(Repo).all()
 
         for repo in repos:
             first_tasks_repo = group(collect_issues.si(repo.repo_git),collect_pull_requests.si(repo.repo_git))
-            second_tasks_repo = group(collect_events.si(repo.repo_git),collect_github_messages.si(repo.repo_git))
+            second_tasks_repo = group(collect_events.si(repo.repo_git),collect_issue_and_pr_comments.si(repo.repo_git))
 
             repo_chain = chain(first_tasks_repo,second_tasks_repo)
             tasks_with_repo_domain.append(repo_chain)
@@ -124,10 +124,10 @@ class AugurTaskRoutine:
         for phaseName, job in self.jobs_dict.items():
             self.logger.info(f"Starting phase {phaseName}")
             #Call the function stored in the dict to return the object to call apply_async on
-            phaseResult = job().apply_async()
+            phaseResult = job(self.logger).apply_async()
             with allow_join_result():
-                phaseResult.wait()
-            self.logger.info(f"Result of {phaseName} phase: {phaseResult.status}")
+                phaseResult.join()
+            #self.logger.info(f"Result of {phaseName} phase: {phaseResult.status}")
 
 
 @celery.task
