@@ -1463,8 +1463,8 @@ class WorkerGitInterfaceable(Worker):
         need_insertion = []
         need_update = []
         all_data = []
-        forward_pagination = True
-        backwards_activation = False
+        forward_pagination = False
+        backwards_activation = True 
         last_page_number = -1
         while True:
 
