@@ -223,30 +223,16 @@ def link_commits_to_contributor(contributorQueue):
         logger = logging.getLogger(link_commits_to_contributor.__name__)
         with FacadeSession(logger) as session:
 
+            query = ("UPDATE commits SET cmt_ght_author_id=%s WHERE cmt_committer_email=%s "
+                    "OR cmt_author_raw_email=%s OR cmt_author_email=%s OR cmt_committer_raw_email=%s")
+
             # # iterate through all the commits with emails that appear in contributors and give them the relevant cntrb_id.
             for cntrb in contributorQueue:
-                logger.debug(
-                    f"These are the emails and cntrb_id's  returned: {cntrb}")
+                logger.debug(f"These are the emails and cntrb_id's  returned: {cntrb}")
 
-                with session.engine.connect() as engine:
+                data = (cntrb["cntrb_id"], cntrb["email"], cntrb["email"], cntrb["email"], cntrb["email"], )
 
-                    data = {
-                        "cntrb_email": cntrb["email"],
-                        "cntrb_id": cntrb["cntrb_id"]
-                    }
-
-                    query = s.sql.text("""
-                            UPDATE commits 
-                            SET cmt_ght_author_id=:cntrb_id
-                            WHERE cmt_committer_email=:cntrb_email
-                            OR cmt_author_raw_email=:cntrb_email
-                            OR cmt_author_email=:cntrb_email
-                            OR cmt_committer_raw_email=:cntrb_email
-                    """)
-
-                    engine.execute(query, **data)            
-            
-            
+                session.insert_or_update_data(query, data)            
         return
 
 
