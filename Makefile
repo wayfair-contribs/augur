@@ -31,28 +31,28 @@ default:
 .PHONY: install-spdx install-spdx-sudo install-augur-sbom
 .PHONY: clean rebuild
 install:
-	@ ./scripts/install/install.sh prod
+	@ . ./scripts/install/install.sh prod
 
 install-dev:
-	@ ./scripts/install/install.sh dev
+	@ . scripts/install/install.sh dev
 
 install-spdx:
-	@ ./scripts/install/install-spdx.sh
+	@ . scripts/install/install-spdx.sh
 
 install-spdx-sudo:
-	@ ./scripts/install/install-spdx-sudo.sh
+	@ . scripts/install/install-spdx-sudo.sh
 
 install-augur-sbom:
-	@ ./scripts/install/nomos.sh
+	@ . scripts/install/nomos.sh
 
 clean:
-	@ scripts/control/clean.sh
+	@ . scripts/control/clean.sh
 
 rebuild:
-	@ scripts/control/rebuild.sh prod
+	@ . scripts/control/rebuild.sh prod
 
 rebuild-dev:
-	@ scripts/control/rebuild-backend.sh dev
+	@ . scripts/control/rebuild-backend.sh dev
 
 
 #
