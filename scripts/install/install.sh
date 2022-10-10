@@ -27,6 +27,7 @@ echo "Done!"
 scripts/install/nltk_dictionaries.sh
 
 
+
 function create_db_config() {
     echo "Enter the database credentials to your database. This will create db.config.json"
     read -p "User: " db_user
@@ -35,6 +36,8 @@ function create_db_config() {
     read -p "Host: " host
     read -p "Port: " port
     read -p "Database: " db_name
+
+    export AUGUR_DB=postgresql://db_user:password@host:port/db_name 
 
     augur config-db init --user $db_user --password $password --host $host --port $port --database-name $db_name
 }
