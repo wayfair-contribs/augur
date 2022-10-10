@@ -37,7 +37,7 @@ function create_db_config() {
     read -p "Port: " port
     read -p "Database: " db_name
 
-    export AUGUR_DB=postgresql://db_user:password@host:port/db_name 
+    export AUGUR_DB=postgresql://$db_user:$password@h$host:port/$db_name 
 
     augur config-db init --user $db_user --password $password --host $host --port $port --database-name $db_name
 }
