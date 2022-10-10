@@ -40,6 +40,12 @@ function create_db_config() {
     #AUGUR_DB=$(export AUGURDB="postgresql://$db_user:$password@$host:$port/$db_name")
     #echo $AUGUR_DB
 
+    echo $db_user
+    echo $password 
+    echo $host 
+    echo $db_name 
+    echo $port 
+
     #export AUGUR_DB=$($DBSTRING) # postgresql://$db_user:$password@h$host:$port/$db_name 
 
     augur config-db init --user $db_user --password $password --host $host --port $port --database-name $db_name
