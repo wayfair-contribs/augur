@@ -73,6 +73,9 @@ default_config = {
                 "workers": 1,
                 "training_days": 1000,
                 "anomaly_days": 14
+            },
+            "Value_Task": {
+                "scc_bin": "scc"
             }
         }
 
