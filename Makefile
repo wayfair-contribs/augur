@@ -31,10 +31,10 @@ default:
 .PHONY: install-spdx install-spdx-sudo install-augur-sbom
 .PHONY: clean rebuild
 install:
-	@ scripts/install/install.sh prod
+	@ source ./scripts/install/install.sh prod
 
 install-dev:
-	@ scripts/install/install.sh dev
+	@ `source ./scripts/install/install.sh dev`
 
 install-spdx:
 	@ scripts/install/install-spdx.sh
