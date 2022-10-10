@@ -38,7 +38,7 @@ function create_db_config() {
     read -p "Database: " db_name
 
     DBSTRING="postgresql://$db_user:$password@h$host:port/$db_name"
-    echo DBSTRING
+    echo $DBSTRING
 
     export AUGUR_DB=postgresql://$db_user:$password@h$host:port/$db_name 
 
